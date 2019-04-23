@@ -98,7 +98,7 @@ if __name__ == '__main__':
                 row_month=row_date[5:7]
                 row_day=row_date[8:10]
                 datefolder= row_year + '/' + row_month + '/' + row_day +'/'
-                aws_url = aws_base_url + datefolder + row['Granule Name'] + '/' + row['Granule Name'] + '-pds.browse.png'
+                aws_url = aws_base_url + datefolder + row['Granule Name'] + '/' + row['Granule Name'] + '.zip'
                 cmd='wget -c --show-progress -o ' + logfile + ' ' + aws_url
                 print(cmd)
                 status=subprocess.call(cmd, shell=True)
