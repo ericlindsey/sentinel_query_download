@@ -111,7 +111,7 @@ if __name__ == '__main__':
                 asf_url = row['URL']
                 cmd='wget -c --show-progress -o ' + logfile + ' ' + asf_wget_str + ' ' + asf_url
                 print(cmd)
-                #status=subprocess.call(cmd, shell=True)
+                status=subprocess.call(cmd, shell=True)
             os.chdir(orig_dir)
     else:
         print(r.text)
