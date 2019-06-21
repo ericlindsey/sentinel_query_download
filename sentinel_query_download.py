@@ -5,11 +5,12 @@ Use ASF API to search for granules given search parameters found in a config fil
 Then generate AWS URL and download.
 
 Created on Fri Oct 13 11:10:47 2017
+Modified April 2019 to include AWS downloading
 
 @author: Eric Lindsey, Earth Observatory of Singapore
 """
 
-import configparser,argparse,requests,csv,subprocess,time,os,errno
+import configparser,argparse,requests,csv,subprocess,time,os,errno,glob
 
 # hard-coded URL for ASF query
 asf_baseurl='https://api.daac.asf.alaska.edu/services/search/param?'
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     aws_base_url=config.get('download','aws_base_url')
     
     # parse the config options directly into a query... this may be too naive
+
     # get options from config file
     arg_list=config.items('api_search')
     # join as a single argument string
@@ -64,25 +66,35 @@ if __name__ == '__main__':
 
     # run the ASF query request
     r=requests.post(argurl)
+
+    # print the results in a nice format
+    reader = csv.DictReader(r.text.splitlines())
+    rows=list(reader)
+    numscenes=len(rows)
+    if numscenes > 0:
+        print("Found %s scenes." %numscenes)
+        for row in rows:
+            print('Scene %s, Path %s / Frame %s' %(row['Granule Name'], row['Path Number'], row['Frame Number']))
     
-    # log the results
+    # save the results to a csv file
     logtime=time.strftime("%Y_%m_%d-%H_%M_%S")
     query_log='asf_query_%s.csv'%logtime
     with open(query_log,'w')as f:
-        print('Query result saved to asf_query_%s.csv'%logtime)
+        print('\nQuery result saved to asf_query_%s.csv\n'%logtime)
         f.write(r.text)
         
     # If a download is requested:
-    # parse result into a list of granules, figure out the correct path,
-    # and download each one.
-    # wget -c option will cause existing files to be automatically skipped
-    # (but this causes some overhead; better to tune the query to avoid these files)
+    # parse result into a list of granules, figure out the correct path, and download each one.
     if args.download:
         orig_dir=os.getcwd()
-        reader = csv.DictReader(r.text.splitlines())
-        for row in reader:
+        print('Downloading scenes.')
+        for row in rows:
             frame_dir='P' + row['Path Number'].zfill(3) + '/F' + row['Frame Number'].zfill(4)
-            print('Downloading granule ', row['Granule Name'], 'to directory', frame_dir)
+            #old: skip if exists
+            #if len(glob.glob('%s/%s.*'%(frame_dir,row['Granule Name']))) > 0:
+            #    print('File exists, skipping')
+            #else:
+            print('\nDownloading granule ', row['Granule Name'], 'to directory', frame_dir)
             
             #log file name
             logfile='log_wget_' + row['Granule Name'] + logtime + '.log'
@@ -99,20 +111,22 @@ if __name__ == '__main__':
                 row_day=row_date[8:10]
                 datefolder= row_year + '/' + row_month + '/' + row_day +'/'
                 aws_url = aws_base_url + datefolder + row['Granule Name'] + '/' + row['Granule Name'] + '.zip'
-                cmd='wget -c --show-progress -o ' + logfile + ' ' + aws_url
+                cmd='wget -c --no-check-certificate -o ' + logfile + ' ' + aws_url
                 print(cmd)
                 status=subprocess.call(cmd, shell=True)
                 if status != 0:
                     if download_site == 'AWS':
-                        print('Download failed. Perhaps granule is not at AWS? Not retrying.')
+                        print('Download failed. Perhaps granule is not at AWS? Not retrying, as only AWS is specified.')
                     else:
                         print('Download failed. Trying ASF download instead.')
             if((status != 0 and download_site == 'both') or download_site == 'ASF'):
                 asf_url = row['URL']
-                cmd='wget -c --show-progress -o ' + logfile + ' ' + asf_wget_str + ' ' + asf_url
+                cmd='wget -c --no-check-certificate -o ' + logfile + ' ' + asf_wget_str + ' ' + asf_url
                 print(cmd)
                 status=subprocess.call(cmd, shell=True)
             os.chdir(orig_dir)
+        print('\nDownloads complete.\n')
     else:
-        print(r.text)
+        print('Not downloading scenes.\n')
 
+print('Sentinel query complete.')
