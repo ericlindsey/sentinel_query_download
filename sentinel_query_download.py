@@ -16,11 +16,12 @@ import configparser,argparse,requests,csv,subprocess,time,os,errno,glob,shutil
 #from urllib.request import urlopen
 import multiprocessing as mp
 
-# hard-coded URL for ASF query
+# hard-coded URL for ASF query:
 asf_baseurl='https://api.daac.asf.alaska.edu/services/search/param?'
 
-# AWS base: included as parameter in config file
-#aws_base_url = 'http://sentinel1-slc-seasia-pds.s3-website-ap-southeast-1.amazonaws.com/datasets/slc/v1.1/'
+# AWS base URL for public dataset downloads:
+aws_baseurl = 'http://sentinel1-slc-seasia-pds.s3-website-ap-southeast-1.amazonaws.com/datasets/slc/v1.1/'
+
 
 def downloadGranule(row):
     orig_dir=os.getcwd()
@@ -37,7 +38,7 @@ def downloadGranule(row):
         row_month=row_date[5:7]
         row_day=row_date[8:10]
         datefolder= row_year + '/' + row_month + '/' + row_day +'/'
-        aws_url = aws_base_url + datefolder + row['Granule Name'] + '/' + row['Granule Name'] + '.zip'
+        aws_url = aws_baseurl + datefolder + row['Granule Name'] + '/' + row['Granule Name'] + '.zip'
         # run the download command
         status = downloadGranule_wget(aws_url)
         if status != 0:
@@ -91,8 +92,7 @@ if __name__ == '__main__':
     config=configparser.ConfigParser()
     config.optionxform = str #make the config file case-sensitive
     config.read(args.config)
-    download_site=config.get('download','download_site')
-    aws_base_url=config.get('download','aws_base_url')
+    download_site=config.get('download','download_site',fallback='both')
     nproc=config.getint('download','nproc',fallback=1)
     
     # we parse the config options directly into a query... this may be too naive
