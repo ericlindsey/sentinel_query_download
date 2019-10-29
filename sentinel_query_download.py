@@ -121,15 +121,14 @@ if __name__ == '__main__':
         print('Query result saved to asf_query_%s.%s'%(logtime,output_format))
         f.write(r.text)
 
-    numscenes=len(rows)
-    plural_s = 's' if numscenes > 1 else ''
-
     # print the results to the screen
     if args.verbose:
         if ouptut_format == 'csv':
             # print the results in a nice format
             reader = csv.DictReader(r.text.splitlines())
             rows=list(reader)
+            numscenes=len(rows)
+            plural_s = 's' if numscenes > 1 else ''
             if numscenes > 0:
                 print("Found %s scene%s." %(numscenes,plural_s))
                 for row in rows:
@@ -145,7 +144,7 @@ if __name__ == '__main__':
         if nproc > 1:
             print('\nRunning %d downloads in parallel.'%nproc)
         else:
-            print('\nDownloading scene%s 1 at a time.'%plural_s)
+            print('\nDownloading 1 at a time.')
         downloadList = []
         for row in rows:
             downloadDict = row
@@ -164,9 +163,9 @@ if __name__ == '__main__':
         pool.map_async(downloadGranule, downloadList, chunksize=1)
         pool.close()
         pool.join()
-        print('\nDownload%s complete.\n'%plural_s)
+        print('\nDownload complete.\n')
     else:
-        print('\nNot downloading scene%s.\n'%plural_s)
+        print('\nNot downloading.\n')
 
 print('Sentinel query complete.\n')
 
