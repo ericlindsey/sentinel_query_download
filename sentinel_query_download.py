@@ -7,6 +7,7 @@ Then generate URL and download from either AWS open dataset or ASF.
 First version: October 2017
 Modified April 2019 to include AWS downloading
 Modified June 2019 to enable parallel downloads
+Modified Oct 2019 to enable multiple file types (e.g. csv,json,kml)
 
 @author: Eric Lindsey, Earth Observatory of Singapore
 """
@@ -16,10 +17,10 @@ import configparser,argparse,requests,csv,subprocess,time,os,errno,glob,shutil
 #from urllib.request import urlopen
 import multiprocessing as mp
 
-# hard-coded URL for ASF query:
+# hard-coded ASF query URL:
 asf_baseurl='https://api.daac.asf.alaska.edu/services/search/param?'
 
-# AWS base URL for public dataset downloads:
+# hard-coded AWS base URL for public dataset downloads:
 aws_baseurl = 'http://sentinel1-slc-seasia-pds.s3-website-ap-southeast-1.amazonaws.com/datasets/slc/v1.1/'
 
 
@@ -43,9 +44,9 @@ def downloadGranule(row):
         status = downloadGranule_wget(aws_url)
         if status != 0:
             if download_site == 'AWS':
-                print('Amazon download failed. Perhaps granule is not at AWS? Not retrying, as only AWS is specified.')
+                print('AWS download failed. Not trying ASF, because only AWS is specified.')
             else:
-                print('Amazon download failed. Trying ASF download instead.')
+                print('AWS download failed. Trying ASF download instead.')
     if((status != 0 and download_site == 'both') or download_site == 'ASF'):
         asf_url = asf_wget_str + ' ' + row['URL']
         # run the download command
@@ -85,7 +86,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Use http requests and wget to search and download data from the ASF archive, based on parameters in a config file.')
     parser.add_argument('config',type=str,help='supply name of config file to set up API query. Required.')
     parser.add_argument('--download',action='store_true',help='Download the resulting scenes (default: false)')
-    parser.add_argument('--save-csv',action='store_true',help='Save the resulting csv file (default: false)')
+    parser.add_argument('--verbose',action='store_true',help='Print the query result to the screen (default: false)')
+    #parser.add_argument('--save-csv',action='store_true',help='Save the resulting csv file (default: false)')
     args = parser.parse_args()
 
     # read config file
@@ -94,13 +96,12 @@ if __name__ == '__main__':
     config.read(args.config)
     download_site=config.get('download','download_site',fallback='both')
     nproc=config.getint('download','nproc',fallback=1)
+    output_format=config.get('api_search','output',fallback='csv')
     
     # we parse the config options directly into a query... this may be too naive
     arg_list=config.items('api_search')
     # join as a single argument string
     arg_str='&'.join('%s=%s'%(item[0],item[1]) for item in arg_list)
-    # add extra option for csv format.
-    arg_str=arg_str+'&output=csv'
     
     # form into a query
     argurl=asf_baseurl + arg_str
@@ -112,30 +113,37 @@ if __name__ == '__main__':
     print(argurl + '\n')
     r=requests.post(argurl)
 
-    # print the results in a nice format
-    reader = csv.DictReader(r.text.splitlines())
-    rows=list(reader)
-    numscenes=len(rows)
-    if numscenes > 1:
-        plural_s='s'
-    else:
-        plural_s = ''
-    if numscenes > 0:
-        print("Found %s scene%s." %(numscenes,plural_s))
-        for row in rows:
-            print('Scene %s, Path %s / Frame %s' %(row['Granule Name'], row['Path Number'], row['Frame Number']))
     
-    # save the results to a csv file
-    if args.save_csv:
-        logtime=time.strftime("%Y_%m_%d-%H_%M_%S")
-        query_log='asf_query_%s.csv'%logtime
-        with open(query_log,'w')as f:
-            print('\nQuery result saved to asf_query_%s.csv'%logtime)
-            f.write(r.text)
+    # save the results to a file
+    logtime=time.strftime("%Y_%m_%d-%H_%M_%S")
+    query_log='asf_query_%s.%s'%(logtime,output_format)
+    with open(query_log,'w')as f:
+        print('Query result saved to asf_query_%s.%s'%(logtime,output_format))
+        f.write(r.text)
+
+    # print the results to the screen
+    if args.verbose:
+        if ouptut_format == 'csv':
+            # print the results in a nice format
+            reader = csv.DictReader(r.text.splitlines())
+            rows=list(reader)
+            numscenes=len(rows)
+            if numscenes > 1:
+                plural_s='s'
+            else:
+                plural_s = ''
+            if numscenes > 0:
+                print("Found %s scene%s." %(numscenes,plural_s))
+                for row in rows:
+                    print('Scene %s, Path %s / Frame %s' %(row['Granule Name'], row['Path Number'], row['Frame Number']))
+        else:
+            print(r.text)
         
     # If a download is requested:
     # parse result into a list of granules, figure out the correct path, and download each one.
-    if args.download:
+    if output_format != 'csv' and args.download:
+        print('Error: cannot download unless output format is set to csv. Doing nothing.')
+    if output_format == 'csv' and args.download:
         if nproc > 1:
             print('\nRunning %d downloads in parallel.'%nproc)
         else:
