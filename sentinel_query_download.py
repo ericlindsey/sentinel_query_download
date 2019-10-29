@@ -121,17 +121,15 @@ if __name__ == '__main__':
         print('Query result saved to asf_query_%s.%s'%(logtime,output_format))
         f.write(r.text)
 
+    numscenes=len(rows)
+    plural_s = 's' if numscenes > 1 else ''
+
     # print the results to the screen
     if args.verbose:
         if ouptut_format == 'csv':
             # print the results in a nice format
             reader = csv.DictReader(r.text.splitlines())
             rows=list(reader)
-            numscenes=len(rows)
-            if numscenes > 1:
-                plural_s='s'
-            else:
-                plural_s = ''
             if numscenes > 0:
                 print("Found %s scene%s." %(numscenes,plural_s))
                 for row in rows:
