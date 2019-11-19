@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     # print the results to the screen
     if args.verbose:
-        if ouptut_format == 'csv':
+        if output_format == 'csv':
             # print the results in a nice format
             reader = csv.DictReader(r.text.splitlines())
             rows=list(reader)
