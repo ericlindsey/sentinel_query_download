@@ -112,7 +112,10 @@ if __name__ == '__main__':
     print('\nRunning ASF API query:')
     print(argurl + '\n')
     r=requests.post(argurl)
-
+    # parse rows if csv, else we just operate on the 'r' object
+    if output_format == 'csv':
+        reader = csv.DictReader(r.text.splitlines())
+        rows=list(reader)
     
     # save the results to a file
     logtime=time.strftime("%Y_%m_%d-%H_%M_%S")
@@ -125,8 +128,6 @@ if __name__ == '__main__':
     if args.verbose:
         if output_format == 'csv':
             # print the results in a nice format
-            reader = csv.DictReader(r.text.splitlines())
-            rows=list(reader)
             numscenes=len(rows)
             plural_s = 's' if numscenes > 1 else ''
             if numscenes > 0:
