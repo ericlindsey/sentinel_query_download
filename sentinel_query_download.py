@@ -86,7 +86,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Use http requests and wget to search and download data from the ASF archive, based on parameters in a config file.')
     parser.add_argument('config',type=str,help='supply name of config file to set up API query. Required.')
     parser.add_argument('--download',action='store_true',help='Download the resulting scenes (default: false)')
-    parser.add_argument('--verbose',action='store_true',help='Print the query result to the screen (default: false)')
+    parser.add_argument('--verbose',action='store_false',help='Print the query result to the screen (default: true)')
     #parser.add_argument('--save-csv',action='store_true',help='Save the resulting csv file (default: false)')
     args = parser.parse_args()
 
