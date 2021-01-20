@@ -19,7 +19,7 @@ Here is a simple config file example, which returns IW scenes collected during t
     beamMode = IW
     intersectsWith = POLYGON((-106.7975 34.9141,-106.3267 34.9141,-106.3267 35.3502,-106.7975 35.3502,-106.7975 34.9141))
     start=2019-04-01T00:00:00UTC
-    end=2019-04-15T00:00:00UTC
+    end=2019-05-05T00:00:00UTC
     relativeOrbit=56
 
     [download]
