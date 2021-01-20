@@ -55,7 +55,6 @@ def downloadGranule(row):
         status = downloadGranule_wget(asf_url)
         if status != 0:
             print('ASF download failed. Granule not downloaded.')
-    print("end of download function")
     os.chdir(orig_dir)
 
 ## urllib not currently used. Test for speed?
@@ -156,7 +155,7 @@ if __name__ == '__main__':
             if not (config.has_section('asf_download') and config.has_option('asf_download','http-user') \
                 and config.has_option('asf_download','http-password') and len(config.get('asf_download','http-user'))>0 \
                 and len(config.get('asf_download','http-password')) > 0):
-                raise ValueError('ASF username and password missing in config file.')
+                raise ValueError('ASF username or password missing in config file.')
             asf_wget_options=config.items('asf_download')
             asf_wget_str=' '.join('--%s=%s'%(item[0],item[1]) for item in asf_wget_options)
         else:

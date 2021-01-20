@@ -4,13 +4,13 @@ Eric Lindsey, Earth Observatory of Singapore
 
 Last updated: June 2020
 
-This repository contains a simple script that enables easy search and download of Sentinel-1 (or other SAR) data hosted at the Alaska Satellite Facility (ASF) using the ASF API. For help on this API, visit https://asf.alaska.edu/api/
+This repository contains a simple script that enables easy search and download of Sentinel-1 (or other SAR) data hosted at the Alaska Satellite Facility (ASF) using the ASF API. For help on this API, visit https://asf.alaska.edu/api/.
 
 The basic use of the script is as follows: enter API keywords and values in a config file (example included), then pass this file as a single argument on the command line. The script will generate an API query, and download the resulting .csv file of results.
 
 The default is to return a search query (csv file) but not download the data. To download the granules after searching, add the command-line option --download. To print out a human-readable table of the results to the screen, use --verbose.
 
-Here is a simple config file example, which returns IW scenes collected during the first two weeks in April 2019 from Path 56 over Albuquerque, NM:
+Here is a simple config file example, which returns IW scenes collected during part of April and May 2019 from Path 56 over Albuquerque, NM:
 
     [api_search]
     output = csv
@@ -18,7 +18,7 @@ Here is a simple config file example, which returns IW scenes collected during t
     processingLevel = SLC
     beamMode = IW
     intersectsWith = POLYGON((-106.7975 34.9141,-106.3267 34.9141,-106.3267 35.3502,-106.7975 35.3502,-106.7975 34.9141))
-    start=2019-04-01T00:00:00UTC
+    start=2019-04-05T00:00:00UTC
     end=2019-05-05T00:00:00UTC
     relativeOrbit=56
 
