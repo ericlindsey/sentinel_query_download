@@ -26,6 +26,7 @@ aws_baseurl = 'http://sentinel1-slc-seasia-pds.s3-website-ap-southeast-1.amazona
 
 def downloadGranule(row):
     orig_dir=os.getcwd()
+    download_site = row['Download Site']
     frame_dir='P' + row['Path Number'].zfill(3) + '/F' + row['Frame Number'].zfill(4)
     print('Downloading granule ', row['Granule Name'], 'to directory', frame_dir)
     #create frame directory
@@ -33,6 +34,7 @@ def downloadGranule(row):
     os.chdir(frame_dir)
     status=0
     if(download_site == 'AWS' or download_site == 'both'):
+        print('Try AWS download first.')
         # create url for AWS download, based on the granule name
         row_date=row['Acquisition Date']
         row_year=row_date[0:4]
@@ -44,15 +46,16 @@ def downloadGranule(row):
         status = downloadGranule_wget(aws_url)
         if status != 0:
             if download_site == 'AWS':
-                print('AWS download failed. Not trying ASF, because only AWS is specified.')
+                print('AWS download failed. Granule not downloaded.')
             else:
                 print('AWS download failed. Trying ASF download instead.')
     if((status != 0 and download_site == 'both') or download_site == 'ASF'):
-        asf_url = asf_wget_str + ' ' + row['URL']
+        asf_url = row['asf_wget_str'] + ' ' + row['URL']
         # run the download command
         status = downloadGranule_wget(asf_url)
         if status != 0:
             print('ASF download failed. Granule not downloaded.')
+    print("end of download function")
     os.chdir(orig_dir)
 
 ## urllib not currently used. Test for speed?
@@ -67,8 +70,8 @@ def downloadGranule(row):
 def downloadGranule_wget(options_and_url):
     cmd='wget -c --no-check-certificate -q ' + options_and_url
     print(cmd)
-    status=subprocess.call(cmd, shell=True)
-    return status
+    result = subprocess.run(cmd, shell=True, capture_output=True)
+    return result.returncode
 
 # implement shell 'mkdir -p' to create directory trees with one command, and ignore 'directory exists' error
 def mkdir_p(path):
@@ -81,12 +84,11 @@ def mkdir_p(path):
             raise
 
 if __name__ == '__main__':
- 
     # read command line arguments and parse config file.
     parser = argparse.ArgumentParser(description='Use http requests and wget to search and download data from the ASF archive, based on parameters in a config file.')
     parser.add_argument('config',type=str,help='supply name of config file to set up API query. Required.')
     parser.add_argument('--download',action='store_true',help='Download the resulting scenes (default: false)')
-    parser.add_argument('--verbose',action='store_false',help='Print the query result to the screen (default: true)')
+    parser.add_argument('--verbose',action='store_true',help='Print the query result to the screen (default: false)')
     #parser.add_argument('--save-csv',action='store_true',help='Save the resulting csv file (default: false)')
     args = parser.parse_args()
 
@@ -146,18 +148,25 @@ if __name__ == '__main__':
             print('\nRunning %d downloads in parallel.'%nproc)
         else:
             print('\nDownloading 1 at a time.')
+        # need to pass http-user and http-password for ASF downloads.
+        # this section should contain 'http-user', 'http-password', plus any other wget options.
+        # we join them (naively) as a single argument string
+        if download_site != 'AWS':
+            # first, check for missing values:
+            if not (config.has_section('asf_download') and config.has_option('asf_download','http-user') \
+                and config.has_option('asf_download','http-password') and len(config.get('asf_download','http-user'))>0 \
+                and len(config.get('asf_download','http-password')) > 0):
+                raise ValueError('ASF username and password missing in config file.')
+            asf_wget_options=config.items('asf_download')
+            asf_wget_str=' '.join('--%s=%s'%(item[0],item[1]) for item in asf_wget_options)
+        else:
+            asf_wget_str=''
         downloadList = []
         for row in rows:
             downloadDict = row
             # add some extra info to the csv row for download purposes
             downloadDict['Download Site'] = download_site
-            if download_site != 'AWS':
-                # need to pass http-user and http-password for ASF downloads
-                # this section should contain 'http-user', 'http-password', plus any other wget options.
-                # we join them (also naively) as a single argument string
-                asf_wget_options=config.items('asf_download')
-                asf_wget_str=' '.join('--%s=%s'%(item[0],item[1]) for item in asf_wget_options)
-                downloadDict['asf_wget_str'] = asf_wget_str
+            downloadDict['asf_wget_str'] = asf_wget_str
             downloadList.append(downloadDict)
         # map list to multiprocessing pool
         pool = mp.Pool(processes=nproc)
@@ -168,5 +177,5 @@ if __name__ == '__main__':
     else:
         print('\nNot downloading.\n')
 
-print('Sentinel query complete.\n')
+    print('Sentinel query complete.\n')
 
