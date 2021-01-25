@@ -56,7 +56,7 @@ If you are satisfied with the scenes found, then run the code again with the --d
 
     python sentinel_query_download.py sentinel_query.config --verbose --download
 
-Currently, the script is set up to prefer downloading from the AWS Sentinel-1 Public Dataset for Southeast Asia; if no file is found there we fall back to downloading from ASF directly (this requires an ASF account). See the config file for more details on this option, and for more information on the AWS dataset, see https://registry.opendata.aws/sentinel1-slc-seasia-pds/
+If you set download_site = both, the script is set up to prefer downloading from the AWS Sentinel-1 Public Dataset for Southeast Asia; if no file is found there we fall back to downloading from ASF directly (this requires an ASF account). To force ASF-only downloading, set download_site = ASF. For more information on the AWS dataset, see https://registry.opendata.aws/sentinel1-slc-seasia-pds/ - this includes all SLC data acquired over Southeast Asia and parts of East Asia by Sentinel-1, and is hosted in the Singapore AWS region. Depending on your location, this may be much faster (or slower) than downloading from ASF directly.
 
 Running multiple downloads in parallel is possible through the python multiprocessing toolbox, via the config file option 'nproc'. The true effective speedup from running many downloads at the same time has not been tested; this may depend on your own storage and bandwidth situation.
 
