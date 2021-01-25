@@ -2,7 +2,7 @@ Sentinel-1 query and download script
 ------
 Eric Lindsey, Earth Observatory of Singapore
 
-Last updated: June 2020
+Last updated: January 2021
 
 This repository contains a simple script that enables easy search and download of Sentinel-1 (or other SAR) data hosted at the Alaska Satellite Facility (ASF) using the ASF API. For help on this API, visit https://asf.alaska.edu/api/.
 
