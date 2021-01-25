@@ -1,6 +1,6 @@
 Sentinel-1 query and download script
 ------
-Eric Lindsey, Earth Observatory of Singapore
+Eric Lindsey, University of New Mexico
 
 Last updated: January 2021
 
