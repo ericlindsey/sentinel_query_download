@@ -73,25 +73,25 @@ To use the second script, you are encouraged to make use of the driver script 'r
 
 1. Setup defaults. Set the code path, and location where you downloaded the files. If you want the orbit files to be stored somewhere other than the current directory, change this value too. Finally, you can run with multiple processors - note this script does a LOT of disk I/O, so multiple processors will only speed things up if you are doing this all on a solid-state-drive. Otherwise, using more than one processor will likely slow things down!
 
-
-    code_path="$GMTSAR_APP/cat_s1.py"
-    download_path="../download/P*/F*"
-    orbit_path="."
-    nproc=1
-    
+```
+code_path="$GMTSAR_APP/cat_s1.py"
+download_path="../download/P*/F*"
+orbit_path="."
+nproc=1
+```    
     
 2. Set parameters for your data. You need to specify whether the track is Descending or Ascending with a D or A, and then set your lat/lon pins for the approximate start and end location of the frame. Longitude does not really matter, as long as it is close to the center of the frame. Latitude is more important. Note, these values are approximate only, and it's a good idea to make them a little bit larger than you really need. Make sure you have downloaded data from an area larger than the extent of your pins, too, or you may get some frames with missing data!
 
-
-    direction="D" # D or A
-    pin1="-106.5/35.4" #lon/lat along northern frame edge
-    pin2="-106.7/34.9" #lon/lat along southern frame edge
-    
+```
+direction="D" # D or A
+pin1="-106.5/35.4" #lon/lat along northern frame edge
+pin2="-106.7/34.9" #lon/lat along southern frame edge
+```    
     
 3. Finally, the commad is run with the correct options.
 
+```
+python $code_path $download_path -o $orbit_path -d $direction -l $pin1/$pin2 -n $nproc
+```
 
-    python $code_path $download_path -o $orbit_path -d $direction -l $pin1/$pin2 -n $nproc
-
-
-Note: You do not need to unzip the data beforehand; this will be done automatically during the frame creation. If you have already unzipped your files, add the 
+Note: You do not need to unzip the data beforehand; this will be done automatically during the frame creation. If you have already unzipped your files, add the additional flag '-z' at the end of the command.
