@@ -2,7 +2,7 @@ Sentinel-1 query and download script
 ------
 Eric Lindsey, University of New Mexico
 
-Last updated: January 2021
+Last updated: July 2021
 
 This repository contains two scripts:
 
