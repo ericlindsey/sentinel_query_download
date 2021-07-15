@@ -8,11 +8,12 @@ First version: October 2017
 Modified April 2019 to include AWS downloading
 Modified June 2019 to enable parallel downloads
 Modified Oct 2019 to enable multiple file types (e.g. csv,json,kml)
+Modified July 2021, minor fixes
 
-@author: Eric Lindsey, Earth Observatory of Singapore
+@author: Eric Lindsey, University of New Mexico
 """
 
-import configparser,argparse,requests,csv,subprocess,time,os,errno,glob,shutil
+import configparser,argparse,requests,csv,subprocess,time,os
 #optional use urllib instead of wget
 #from urllib.request import urlopen
 import multiprocessing as mp
@@ -23,14 +24,13 @@ asf_baseurl='https://api.daac.asf.alaska.edu/services/search/param?'
 # hard-coded AWS base URL for public dataset downloads:
 aws_baseurl = 'http://sentinel1-slc-seasia-pds.s3-website-ap-southeast-1.amazonaws.com/datasets/slc/v1.1/'
 
-
 def downloadGranule(row):
     orig_dir=os.getcwd()
     download_site = row['Download Site']
     frame_dir='P' + row['Path Number'].zfill(3) + '/F' + row['Frame Number'].zfill(4)
     print('Downloading granule ', row['Granule Name'], 'to directory', frame_dir)
     #create frame directory
-    mkdir_p(frame_dir)
+    os.makedirs(frame_dir, exist_ok=True)
     os.chdir(frame_dir)
     status=0
     if(download_site == 'AWS' or download_site == 'both'):
@@ -71,16 +71,6 @@ def downloadGranule_wget(options_and_url):
     print(cmd)
     result = subprocess.run(cmd, shell=True, capture_output=True)
     return result.returncode
-
-# implement shell 'mkdir -p' to create directory trees with one command, and ignore 'directory exists' error
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
 
 if __name__ == '__main__':
     # read command line arguments and parse config file.
