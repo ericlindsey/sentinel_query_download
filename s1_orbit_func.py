@@ -28,7 +28,7 @@ def parse_s1_SAFE_name(safe_name):
 
 
 
-def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_missing=True,skip_notfound=True):
+def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_missing=True,skip_notfound=True,preciseonly=False):
     """
     Orbit files have 3 dates: production date, start and end range. Image files have 2 dates: start, end.
     We want to find the latest file (most recent production) whose range includes the range of the image.
@@ -52,9 +52,11 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
             [eofprod,eofstart,eofend] = get_dates_from_eof(eof)
             #check if the EOF validity dates span the entire image
             if eofstart < imagestart_pad and eofend > imageend_pad:
-                eoflist.append(os.path.abspath(os.path.join(s1_orbit_dir,eof)))
-                #record the production time to ensure we get the most recent one
-                eofprodlist.append(eofprod)       
+                # exclude case where preciseonly is set and image is RESORB type
+                if not (preciseonly and 'AUX_RESORB' in eof):
+                    eoflist.append(os.path.abspath(os.path.join(s1_orbit_dir,eof)))
+                    #record the production time to ensure we get the most recent one
+                    eofprodlist.append(eofprod)       
 
     #print the most recent valid EOF found in the folders
     if eoflist:
@@ -65,7 +67,7 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
         tstart=imagestart_pad.strftime('%Y-%m-%dT%H:%M:%S')
         tend=imageend_pad.strftime('%Y-%m-%dT%H:%M:%S')
         orbit = get_latest_orbit_copernicus_api(sat_ab,tstart,tend,'AUX_POEORB')
-        if not orbit:
+        if not orbit and not preciseonly:
             orbit = get_latest_orbit_copernicus_api(sat_ab,tstart,tend,'AUX_RESORB')        
         if orbit:
             # set download location to one of the user-supplied folders. We assume the user would either supply one folder, or two folders with 'resorb' coming second.
@@ -74,6 +76,7 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
             else:
                 target_dir=s1_orbit_dirs[0]
             # download and return the full path to the file
+            print(target_dir)
             latest_eof = download_copernicus_orbit_file(target_dir,orbit['remote_url'])
 
     # nothing was found - print a warning or error
@@ -183,3 +186,18 @@ def download_copernicus_orbit_file(dest_folder,remote_url):
     open(eof_filename, 'wb').write(dl_response.content)
 
     return eof_filename
+
+
+def get_dates_from_eof(eof_name):
+    """
+    EOF file has name like S1A_OPER_AUX_POEORB_OPOD_20170917T121538_V20170827T225942_20170829T005942.EOF
+    Function returns a list of 3 datetime objects matching the strings ['20170917T121538','20170827T225942','20170829T005942']
+    """
+    #make sure we have just the file basename
+    eof_name = os.path.basename(eof_name)
+    #parse string by fixed format
+    date1=datetime.datetime.strptime(eof_name[25:40],'%Y%m%dT%H%M%S')
+    date2=datetime.datetime.strptime(eof_name[42:57],'%Y%m%dT%H%M%S')
+    date3=datetime.datetime.strptime(eof_name[58:73],'%Y%m%dT%H%M%S')
+    return [date1,date2,date3]
+
