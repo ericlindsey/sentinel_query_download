@@ -10,7 +10,7 @@ Created on Mon Oct 23 10:43:44 2017
 @author: elindsey
 """
 
-import os, s1_download_func, argparse, string, random, multiprocessing, shutil, glob
+import os, s1_frame_func, argparse, string, random, multiprocessing, shutil, glob
 
 ######################## Command-line execution ########################
 
