@@ -9,6 +9,7 @@ Created on Wed Oct 25 11:45:24 2017
 import os,sys,shutil,glob,datetime,multiprocessing,random,string
 import requests,json,cgi,tarfile
 from xml.etree import ElementTree
+import s1_orbit_func
 
 ######################## Sentinel-specific functions ########################
 # This satellite is a real nightmare for my attempts at standardization 
@@ -57,7 +58,7 @@ def find_images_by_orbit(dirlist,s1_orbit_dirs,ftype='SAFE'):
 
             if sat_mode in valid_modes:
                 #Find matching EOF
-                eof_name = get_latest_orbit_file(sat_ab,image_start,image_end,s1_orbit_dirs,skip_notfound=True)
+                eof_name = s1_orbit_func.get_latest_orbit_file(sat_ab,image_start,image_end,s1_orbit_dirs,skip_notfound=True)
                 if eof_name is not None:
                     #print('Got EOF:',eof_name)
                 
