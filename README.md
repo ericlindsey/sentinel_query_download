@@ -88,10 +88,10 @@ pin1="-106.5/35.4" #lon/lat along northern frame edge
 pin2="-106.7/34.9" #lon/lat along southern frame edge
 ```    
     
-3. Finally, the commad is run with the correct options.
+3. Finally, run the command.
 
 ```
-python $code_path $download_path -o $orbit_path -d $direction -l $pin1/$pin2 -n $nproc
+./run_cat_s1.sh
 ```
 
 Note: You do not need to unzip the data beforehand; this will be done automatically during the frame creation. If you have already unzipped your files, add the additional flag '-z' at the end of the command.

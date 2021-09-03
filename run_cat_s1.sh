@@ -10,9 +10,9 @@
 
 # defaults
 code_path="$GMTSAR_APP/cat_s1.py"
-download_path="P*/F*"
-orbit_path="."
-nproc=1
+download_path="../download/P*/F*"
+orbit_path="/home/bigdata/orbits/S1"
+nproc=4
 
 #manually edit
 direction="D" # D or A
