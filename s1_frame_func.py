@@ -6,8 +6,7 @@ Created on Wed Oct 25 11:45:24 2017
 @author: elindsey
 """
 
-import os,sys,shutil,glob,datetime,multiprocessing,random,string
-import requests,json,cgi,tarfile
+import os,sys,shutil,glob,datetime
 from xml.etree import ElementTree
 import s1_orbit_func
 

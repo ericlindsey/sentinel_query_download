@@ -9,14 +9,14 @@ Modified April 2019 to include AWS downloading
 Modified June 2019 to enable parallel downloads
 Modified Oct 2019 to enable multiple file types (e.g. csv,json,kml)
 Modified July 2021, minor fixes
+Modified April 2023, change multiprocessing start method to spawn to avoid race conditions
 
 @author: Eric Lindsey, University of New Mexico
 """
 
-import configparser,argparse,requests,csv,subprocess,time,os
+import configparser,argparse,requests,csv,subprocess,os,multiprocessing,time
 #optional use urllib instead of wget
 #from urllib.request import urlopen
-import multiprocessing as mp
 
 # hard-coded ASF query URL:
 asf_baseurl='https://api.daac.asf.alaska.edu/services/search/param?'
@@ -158,10 +158,9 @@ if __name__ == '__main__':
             downloadDict['asf_wget_str'] = asf_wget_str
             downloadList.append(downloadDict)
         # map list to multiprocessing pool
-        pool = mp.Pool(processes=nproc)
-        pool.map_async(downloadGranule, downloadList, chunksize=1)
-        pool.close()
-        pool.join()
+        multiprocessing.set_start_method("spawn")
+        with multiprocessing.get_context("spawn").Pool() as pool:
+            pool.map(downloadGranule, downloadList)
         print('\nDownload complete.\n')
     else:
         print('\nNot downloading.\n')

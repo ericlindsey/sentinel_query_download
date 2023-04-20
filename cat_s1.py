@@ -10,7 +10,7 @@ Created on Mon Oct 23 10:43:44 2017
 @author: elindsey
 """
 
-import os, s1_frame_func, argparse, string, random, multiprocessing, shutil, glob
+import s1_frame_func, argparse, multiprocessing, shutil, glob
 
 ######################## Command-line execution ########################
 
@@ -77,6 +77,7 @@ if __name__ == '__main__':
         argslist.append( (images_by_orbit[ab_orbit], eofs[ab_orbit], ll_fname, log_fname, temp_workdir, args.unzipped) )
 
     # run GMTSAR function 'create_frame_tops.csh' in parallel
-    with multiprocessing.Pool(processes=args.nproc) as pool:
+    multiprocessing.set_start_method("spawn")
+    with multiprocessing.get_context("spawn").Pool(processes=args.nproc) as pool:
         pool.starmap(s1_frame_func.create_frame_tops_parallel, argslist)
         

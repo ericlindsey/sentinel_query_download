@@ -6,8 +6,7 @@ Created on Wed Oct 25 11:45:24 2017
 @author: elindsey
 """
 
-import os,sys,shutil,glob,datetime,multiprocessing,random,string
-import requests,json,cgi,tarfile
+import os,sys,glob,datetime,requests,cgi
 from xml.etree import ElementTree
 
 
@@ -60,10 +59,11 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
 
     #print the most recent valid EOF found in the folders
     if eoflist:
+        found_existing=True
         latest_eof = eoflist[eofprodlist.index(max(eofprodlist))]
     # if no file was found locally, download from ESA if this is requested
     elif download_missing:
-        print('No matching orbit file found locally, downloading from ESA')
+        found_existing=False
         tstart=imagestart_pad.strftime('%Y-%m-%dT%H:%M:%S')
         tend=imageend_pad.strftime('%Y-%m-%dT%H:%M:%S')
         orbit = get_latest_orbit_copernicus_api(sat_ab,tstart,tend,'AUX_POEORB')
@@ -76,19 +76,18 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
             else:
                 target_dir=s1_orbit_dirs[0]
             # download and return the full path to the file
-            print(target_dir)
             latest_eof = download_copernicus_orbit_file(target_dir,orbit['remote_url'])
 
     # nothing was found - print a warning or error
     if not latest_eof or not os.path.exists(latest_eof):
         if skip_notfound:
             print("Warning: No matching orbit file found for Sentinel-1%s during time %s to %s in %s - skipping"%(sat_ab,imagestart_pad,imageend_pad,s1_orbit_dirs))
-            return None
+            return None,False
         else:
             print("Error: No matching orbit file found for Sentinel-1%s during time %s to %s in %s"%(sat_ab,imagestart_pad,imageend_pad,s1_orbit_dirs))
             sys.exit(1)
 
-    return latest_eof
+    return latest_eof,found_existing
 
 
 def download_latest_orbit(granule,target_dir,preciseonly):
