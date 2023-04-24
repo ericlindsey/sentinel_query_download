@@ -27,7 +27,7 @@ def parse_s1_SAFE_name(safe_name):
 
 
 
-def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_missing=True,skip_notfound=True,preciseonly=False):
+def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_missing=True,skip_notfound=True,preciseonly=False,print_results=False):
     """
     Orbit files have 3 dates: production date, start and end range. Image files have 2 dates: start, end.
     We want to find the latest file (most recent production) whose range includes the range of the image.
@@ -86,6 +86,13 @@ def get_latest_orbit_file(sat_ab,imagestart,imageend,s1_orbit_dirs,download_miss
         else:
             print("Error: No matching orbit file found for Sentinel-1%s during time %s to %s in %s"%(sat_ab,imagestart_pad,imageend_pad,s1_orbit_dirs))
             sys.exit(1)
+
+    # print out a message about the result
+    if print_results and latest_eof is not None:
+        if found_existing:
+            print(f'Found existing file: {latest_eof}')
+        else:
+            print(f'Downloaded new file: {latest_eof}')
 
     return latest_eof,found_existing
 

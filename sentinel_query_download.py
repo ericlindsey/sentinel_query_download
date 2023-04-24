@@ -160,7 +160,7 @@ if __name__ == '__main__':
         # map list to multiprocessing pool
         multiprocessing.set_start_method("spawn")
         with multiprocessing.get_context("spawn").Pool(processes=nproc) as pool:
-            pool.map(downloadGranule, downloadList)
+            pool.map(downloadGranule, downloadList, chunksize=1)
         print('\nDownload complete.\n')
     else:
         print('\nNot downloading.\n')

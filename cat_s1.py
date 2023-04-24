@@ -79,5 +79,5 @@ if __name__ == '__main__':
     # run GMTSAR function 'create_frame_tops.csh' in parallel
     multiprocessing.set_start_method("spawn")
     with multiprocessing.get_context("spawn").Pool(processes=args.nproc) as pool:
-        pool.starmap(s1_frame_func.create_frame_tops_parallel, argslist)
+        pool.starmap(s1_frame_func.create_frame_tops_parallel, argslist, chunksize=1)
         
