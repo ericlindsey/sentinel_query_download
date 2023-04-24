@@ -38,6 +38,7 @@ if __name__ == '__main__':
             # if orbit num is not in the orbit dict, add to it
             orbitlist[orbit_num] = {'sat_ab': sat_ab, 'start': start, 'end': end}
 
+    print('Found %d orbits.\n'%len(orbitlist))
     # compose the list of argument tuples to pass to the function
     argslist=[]
     for orbit,vals in orbitlist.items():
